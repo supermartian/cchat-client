@@ -3,22 +3,15 @@ package com.vt.chatroom;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.jwebsocket.api.WebSocketClientEvent;
-import org.jwebsocket.api.WebSocketClientTokenListener;
-import org.jwebsocket.api.WebSocketPacket;
-import org.jwebsocket.kit.WebSocketException;
-import org.jwebsocket.token.Token;
 
 public class MainActivity extends Activity implements WSMsgListener {
 
@@ -27,37 +20,55 @@ public class MainActivity extends Activity implements WSMsgListener {
 	private EditText userTxt;
 	private EditText roomTxt;
 	private AlertDialog.Builder alertDialogBuilder;
-	private Connection conn;
-	private WSHandler handler; 
+	private WSHandler handler;
+	private MainActivity thisActivity = this;
+	
+    private Handler messageHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message message) {
+
+            switch (message.what) {
+            case 0:
+            	startChat();
+            	break;
+            case 1:
+            	join();
+            	break;
+            case 2:
+            	break;
+            }
+        }
+    };
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.my_layout);
-       
-        JWC.init();
-        handler = WSHandler.getHandlerInstance();
-        handler.setListener(this);
-        conn = new Connection();
+        setContentView(R.layout.my_layout);   
+        
         login = (ImageButton) findViewById(R.id.login);
         roomTxt = (EditText) findViewById(R.id.roomname);
         userTxt = (EditText) findViewById(R.id.nickName);
         alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Message");
-        conn.execute();
-        JWC.addListener(handler);
-        
+            
+    	handler = WSHandler.getHandlerInstance();
+    	handler.setListener(thisActivity);
+    	
         login.setOnClickListener(new OnClickListener()
         {
             @Override
             public void onClick(View arg0)
             {
-            	join();
+            	handler.open("ws://192.168.1.124:8888");
             }
         });
     }
     @Override
     public void onResume()
     {
+        handler = WSHandler.getHandlerInstance();
+        handler.setListener(this);
         super.onResume();
     }
 
@@ -72,7 +83,7 @@ public class MainActivity extends Activity implements WSMsgListener {
         String roomName = roomTxt.getText().toString();
         
     	JoinMessage joinMsg = new JoinMessage(user, roomName);
-    	joinMsg.send();
+    	joinMsg.send(handler);
     }
 
     @Override
@@ -89,7 +100,6 @@ public class MainActivity extends Activity implements WSMsgListener {
         String user = userTxt.getText().toString();
         String roomName = roomTxt.getText().toString();
 
-
         bundle.putString("user", user);
         bundle.putString("room", roomName);
 
@@ -98,39 +108,24 @@ public class MainActivity extends Activity implements WSMsgListener {
         startActivity(chatDialog);
     }
 
-    private class Connection extends AsyncTask<Void, Integer, Void>{
-
-        @Override
-        protected Void doInBackground(Void... arg0)
-        {
-            // TODO Auto-generated method stub
-            try
-            {
-                JWC.open();
-            }
-            catch (WebSocketException ex)
-            {
-                ex.printStackTrace();
-            }
-            return null;
-        }
-
-    }
-
 	@Override
 	public void onMessage(String message) {
-		// TODO Auto-generated method stub
+		Log.d("PPPPPPPPP", message);
 		
 	}
 	@Override
 	public void onKeyXCHG(int round) {
+		Message updatemsg = new Message();
+		updatemsg.what = 2;
+		updatemsg.obj = round;
+		messageHandler.sendMessage(updatemsg);
+		
 		if (round == 0) {
-			startChat();
+			messageHandler.sendEmptyMessage(0);
 		}
 	}
 	@Override
-	public void onKick() {
-		// TODO Auto-generated method stub
+	public void onKick(String reason) {
 		
 	}
 	
@@ -139,6 +134,11 @@ public class MainActivity extends Activity implements WSMsgListener {
 		if (errcode == 0) {
 			
 		}
+	}
+	
+	@Override
+	public void onOpen() {
+		messageHandler.sendEmptyMessage(1);
 	}
 
 }

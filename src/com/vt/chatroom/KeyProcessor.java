@@ -1,8 +1,11 @@
 package com.vt.chatroom;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -10,8 +13,10 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
+import android.annotation.SuppressLint;
 import android.util.Base64;
 
+@SuppressLint("NewApi")
 public class KeyProcessor {
 	private BigInteger secretval;
 	private BigInteger primeval;
@@ -62,7 +67,9 @@ public class KeyProcessor {
     	byte[] msg = message.getBytes();
     	try {
 			Cipher c = Cipher.getInstance("AES/ECB/PKCS5PADDING");
-			SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+			byte[] keyb = key.getBytes("UTF-8");
+			keyb = Arrays.copyOf(keyb, 16);
+			SecretKeySpec secretKey = new SecretKeySpec(keyb, "AES");
 			c.init(Cipher.ENCRYPT_MODE, secretKey);
 			return Base64.encodeToString(c.doFinal(msg), Base64.DEFAULT);
 		} catch (NoSuchAlgorithmException e) {
@@ -70,12 +77,12 @@ public class KeyProcessor {
 		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -87,7 +94,9 @@ public class KeyProcessor {
     	byte[] msg = Base64.decode(message, Base64.DEFAULT);
     	try {
 			Cipher c = Cipher.getInstance("AES/ECB/PKCS5PADDING");
-			SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(), "AES");
+			byte[] keyb = key.getBytes("UTF-8");
+			keyb = Arrays.copyOf(keyb, 16);
+			SecretKeySpec secretKey = new SecretKeySpec(keyb, "AES");
 			c.init(Cipher.DECRYPT_MODE, secretKey);
 			return new String(c.doFinal(msg));
 		} catch (NoSuchAlgorithmException e) {
@@ -95,12 +104,12 @@ public class KeyProcessor {
 		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
 		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

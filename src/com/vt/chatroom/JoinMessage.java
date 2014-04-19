@@ -5,7 +5,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.json.JSONException;
 
-public class JoinMessage extends Message{
+public class JoinMessage extends CMessage{
 	
 	private static String byteArrayToHexString(byte[] b) {
 		  String result = "";
@@ -17,7 +17,7 @@ public class JoinMessage extends Message{
 	}
 	
 	public JoinMessage(String name, String room) {
-		super(Message.verison, "join");
+		super(CMessage.verison, "join");
 		
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-1");

@@ -8,13 +8,47 @@ import org.json.JSONObject;
 import org.jwebsocket.api.WebSocketClientEvent;
 import org.jwebsocket.api.WebSocketClientTokenListener;
 import org.jwebsocket.api.WebSocketPacket;
+import org.jwebsocket.client.plugins.rpc.Rpc;
+import org.jwebsocket.client.plugins.rpc.RpcListener;
+import org.jwebsocket.client.plugins.rpc.Rrpc;
+import org.jwebsocket.client.token.BaseTokenClient;
+import org.jwebsocket.kit.WebSocketException;
 import org.jwebsocket.token.Token;
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 public class WSHandler implements WebSocketClientTokenListener  {
-	private boolean isopen;
 	private WSMsgListener msgListener;
 	private KeyProcessor keyProc;
 	private static WSHandler instance;
+	private BaseTokenClient jwc;
+	
+    private class JWCTask extends AsyncTask<String, Void, String> {
+    	   	
+        @Override
+        protected String doInBackground(String... opt) {
+        	try {
+        		if (opt[0].equals("open")) {
+        			jwc.open(opt[1]);
+        			jwc.notifyOpened(null);
+        		} else if (opt[0].equals("send")) {
+        			jwc.send(opt[1].getBytes());
+        		} else if (opt[0].equals("close")) {
+        			jwc.close();
+        			msgListener.onKick("disconnected");
+        		}
+			} catch (WebSocketException e) {
+				e.printStackTrace();
+			}
+
+        	return "";
+        }
+        
+        @Override
+        protected void onPostExecute(String result) {
+       }
+    }
 	
 	public static WSHandler getHandlerInstance() {
 		if (instance == null) {
@@ -25,31 +59,44 @@ public class WSHandler implements WebSocketClientTokenListener  {
 	}
 	
 	private WSHandler() {
-		isopen = false;
+		jwc = new BaseTokenClient();
+		jwc.addListener(this);
+		jwc.addListener(new RpcListener());//add an rpc listener
+        Rpc.setDefaultBaseTokenClient(jwc);//set it to the default btc
+        Rrpc.setDefaultBaseTokenClient(jwc);//same here
+	}
+	
+	public void open(String url) {
+		new JWCTask().execute("open", url);
+	}
+	
+	public void close() {
+		new JWCTask().execute("close");
+	}
+	
+	public void send(String msg) {
+		Log.d("PPPPPPPPP", "out:"+msg);
+		new JWCTask().execute("send", msg);
 	}
 	
 	@Override
 	public void processClosed(WebSocketClientEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		msgListener.onKick("Server Disconnected");
 	}
 
 	@Override
 	public void processOpened(WebSocketClientEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		Log.d("PPPPPPPPP", "open=open=open=open=open=open=open=open=open=open=");
+		msgListener.onOpen();
 	}
 
 	@Override
 	public void processOpening(WebSocketClientEvent arg0) {
-		// TODO Auto-generated method stub
-		
+		Log.d("PPPPPPPPP", "ope!!!!!!!");
 	}
 
 	@Override
 	public void processPacket(WebSocketClientEvent arg0, WebSocketPacket arg1) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -61,6 +108,7 @@ public class WSHandler implements WebSocketClientTokenListener  {
 	@Override
 	public void processToken(WebSocketClientEvent arg0, Token token) {
         MessageType type = getMessageType(token.getString("type"));
+        Log.d("PPPPPPPPP", "ope!!!!!!!" + token.toString());
         switch(type)
         {
             case M1:
@@ -71,6 +119,7 @@ public class WSHandler implements WebSocketClientTokenListener  {
             		String sUser = record.getString("user");
             		String sContent = record.getString("content");
             		msgListener.onMessage("<" + sUser + ">: " + sContent + "\n");
+            		Log.d("PPPPPPPPP", "ope!!!!!!!" + sContent);
             	} catch (JSONException e) {
             		e.printStackTrace();
             	}
@@ -132,8 +181,9 @@ public class WSHandler implements WebSocketClientTokenListener  {
     	}
     	
     	KeyMessage ret = new KeyMessage("keyxchg_2", roundsleft, intrmdt);
+    	send(ret.toString());
     	msgListener.onMessage("SYSTEM: Now in round "+roundsleft+" with key: "+secret);
     	msgListener.onKeyXCHG(roundsleft);
-    	ret.send();
+    	
     }
 }

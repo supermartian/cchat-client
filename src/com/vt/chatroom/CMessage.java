@@ -1,13 +1,12 @@
 package com.vt.chatroom;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jwebsocket.kit.WebSocketException;
 
-public class Message {
+public class CMessage {
 	public static int verison = 1;
 	protected JSONObject message;
 	
-	public Message(int ver, String type) {
+	public CMessage(int ver, String type) {
 		message = new JSONObject();
 		try {
 			message.put("ver", ver);
@@ -17,15 +16,15 @@ public class Message {
 		}
 	}
 	
-	public Message(JSONObject m) {
+	public CMessage(JSONObject m) {
 		message = m;	
 	}
 	
-	public void send() {
-		try {
-			JWC.send(message.toString());
-		} catch (WebSocketException e) {
-			e.printStackTrace();
-		}
+	public void send(WSHandler handler) {
+		handler.send(message.toString());
+	}
+	
+	public String toString() {
+		return message.toString();
 	}
 }

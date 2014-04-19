@@ -1,7 +1,10 @@
 package com.vt.chatroom;
 
+import android.annotation.SuppressLint;
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
@@ -11,7 +14,6 @@ import android.widget.EditText;
 import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jwebsocket.kit.WebSocketException;
 import org.jwebsocket.token.Token;
 
 public class ChatDialog extends ListActivity implements WSMsgListener
@@ -24,6 +26,20 @@ public class ChatDialog extends ListActivity implements WSMsgListener
     private ArrayAdapter<String> adapter;
     private WSHandler handler;
     private KeyProcessor keyProc;
+    
+    @SuppressLint("HandlerLeak")
+	private Handler messageHandler = new Handler() {
+
+        @Override
+        public void handleMessage(Message message) {
+
+            switch (message.what) {
+            case 0:
+            	log((String) message.obj);
+            	break;
+            }
+        }
+    };
     
     @Override
     public void onCreate(Bundle savedInstance)
@@ -59,6 +75,7 @@ public class ChatDialog extends ListActivity implements WSMsgListener
 
     @Override
     public void onResume() {
+        handler.setListener(this);
         super.onResume();
     }
 
@@ -67,11 +84,17 @@ public class ChatDialog extends ListActivity implements WSMsgListener
         super.onPause();
     }
     
+    @Override
+    public void onBackPressed() {
+        new LeaveMessage().send(handler);
+        handler.close();
+        super.onBackPressed();
+    }
+    
     public void log(String aString)
     {
         listItems.add(aString);
         adapter.notifyDataSetChanged();
-
     }
 
     public void handleMessage(Token message) throws JSONException
@@ -96,30 +119,19 @@ public class ChatDialog extends ListActivity implements WSMsgListener
             content.put("room", roomName);
             String c = KeyProcessor.encryptMessage(content.toString(), keyProc.getSecret().toString(16));
             message.put("content", c);
-            JWC.send(message.toString());
-        }
-        catch (WebSocketException ex)
+            handler.send(message.toString());
+        } catch (JSONException e)
         {
-            ex.printStackTrace();
-        }
-        catch (JSONException e)
-        {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    public void leave() throws JSONException, WebSocketException
-    {
-        JSONObject leaveMessage = new JSONObject();
-        leaveMessage.put("ver", 1);
-        leaveMessage.put("type", "leave");
-        JWC.send(leaveMessage.toString());
-    }
-
 	@Override
 	public void onMessage(String message) {
-		log(message);
+		Message msg = new Message();
+		msg.what = 0;
+		msg.obj = message;
+		messageHandler.sendMessage(msg);
 	}
 
 	@Override
@@ -132,14 +144,17 @@ public class ChatDialog extends ListActivity implements WSMsgListener
 	}
 
 	@Override
-	public void onKick() {
-		// TODO Auto-generated method stub
+	public void onKick(String reason) {
+		
 	}
 
 	@Override
 	public void onError(int errcode) {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void onOpen() {
 	}
 
 }

@@ -2,10 +2,10 @@ package com.vt.chatroom;
 
 import org.json.JSONException;
 
-public class KeyMessage extends Message{
+public class KeyMessage extends CMessage{
 
 	public KeyMessage(String type, int roundleft, String intrmdt) {
-		super(Message.verison, type);
+		super(CMessage.verison, type);
 		try {
 			message.put("roundleft", roundleft);
 			message.put("keyintrmdt", intrmdt);
