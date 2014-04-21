@@ -1,15 +1,21 @@
 package com.vt.chatroom;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import java.util.ArrayList;
 import org.json.JSONException;
@@ -18,7 +24,7 @@ import org.jwebsocket.token.Token;
 
 public class ChatDialog extends ListActivity implements WSMsgListener
 {
-    private Button sendButton;
+    private ImageButton sendButton;
     private EditText sentenceTxt;
     private String user;
     private String roomName;
@@ -37,6 +43,9 @@ public class ChatDialog extends ListActivity implements WSMsgListener
             case 0:
             	log((String) message.obj);
             	break;
+            case 1:
+                quit();
+                break;
             }
         }
     };
@@ -47,6 +56,7 @@ public class ChatDialog extends ListActivity implements WSMsgListener
         handler = WSHandler.getHandlerInstance();
         handler.setListener(this);
         keyProc = KeyProcessor.getInstance();
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         
         super.onCreate(savedInstance);
         setContentView(R.layout.activity_main);
@@ -55,7 +65,7 @@ public class ChatDialog extends ListActivity implements WSMsgListener
             listItems);
         setListAdapter(adapter);
 
-        sendButton = (Button) findViewById(R.id.send);
+        sendButton = (ImageButton) findViewById(R.id.send);
         sentenceTxt = (EditText) findViewById(R.id.sentence);
 
         sendButton.setOnClickListener(new OnClickListener() {
@@ -84,11 +94,51 @@ public class ChatDialog extends ListActivity implements WSMsgListener
         super.onPause();
     }
     
+    public void quit() {
+    	super.onBackPressed();
+    }
+    
     @Override
     public void onBackPressed() {
-        new LeaveMessage().send(handler);
-        handler.close();
-        super.onBackPressed();
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	// Add the buttons
+    	builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+    	           public void onClick(DialogInterface dialog, int id) {
+    	               new LeaveMessage().send(handler);
+    	               handler.close();
+    	           }
+    	       });
+    	builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+    	           public void onClick(DialogInterface dialog, int id) {
+    	               // User cancelled the dialog
+    	           }
+    	       });
+    	builder.setMessage(R.string.quitconfirm);
+    	builder.create().show();
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.chat_actions, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected (MenuItem item) {
+    	int id = item.getItemId();
+    	switch (id) {
+    		case R.id.action_keys:
+        		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        		builder.setTitle(R.string.aPrivateKey);
+        		builder.setMessage(keyProc.getSecret().toString(16));
+        		builder.create().show();
+    			break;
+    		default:
+    			break;
+    	}
+
+    	return super.onOptionsItemSelected(item);
     }
     
     public void log(String aString)
@@ -137,15 +187,17 @@ public class ChatDialog extends ListActivity implements WSMsgListener
 	@Override
 	public void onKeyXCHG(int round) {
 		if (round != 0) {
+			setProgressBarIndeterminateVisibility(true);
 			sendButton.setEnabled(false);
 		} else {
+			setProgressBarIndeterminateVisibility(false);
 			sendButton.setEnabled(true);
 		}
 	}
 
 	@Override
 	public void onKick(String reason) {
-		
+		messageHandler.sendEmptyMessage(1);
 	}
 
 	@Override
@@ -156,5 +208,4 @@ public class ChatDialog extends ListActivity implements WSMsgListener
 	@Override
 	public void onOpen() {
 	}
-
 }

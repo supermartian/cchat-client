@@ -37,10 +37,6 @@ public class KeyProcessor {
 		this.radix = radix;
 	}
 	
-	public KeyProcessor(String sec, String pub, String prime) {
-		this(sec, pub, prime, 16);
-	}
-	
 	public String computeSecret(String pub) {
 		String ret;
 		BigInteger pubInt = new BigInteger(pub, radix);
@@ -110,7 +106,6 @@ public class KeyProcessor {
 		} catch (BadPaddingException e) {
 			e.printStackTrace();
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	return "";

@@ -47,7 +47,8 @@ public class WSHandler implements WebSocketClientTokenListener  {
         
         @Override
         protected void onPostExecute(String result) {
-       }
+        	this.cancel(true);
+        }
     }
 	
 	public static WSHandler getHandlerInstance() {
@@ -133,30 +134,25 @@ public class WSHandler implements WebSocketClientTokenListener  {
         }
 	}
 	
-	public void setListener(WSMsgListener l)
-	{
+	public void setListener(WSMsgListener l) {
 		this.msgListener = l;
 	}
 	
-	private void handleError(Token token)
-	{
+	private void handleError(Token token) {
 		msgListener.onError(token.getInteger("errcode"));
 	}
 	
-    private MessageType getMessageType(String sType)
-    {
-        for(MessageType mType: MessageType.values())
-        {
-            if(mType.type.equals(sType))
-            {
+    private MessageType getMessageType(String sType) {
+        for(MessageType mType: MessageType.values()) {
+            if(mType.type.equals(sType)) {
                 return mType;
             }
         }
+        
         return MessageType.UNKNOW;
     }
     
-    private void handleKey(Token message)
-    {
+    private void handleKey(Token message) {
     	String prime = message.getString("prime");
     	String intrmdt = message.getString("keyintrmdt");
     	int roundsleft = message.getInteger("roundleft");
@@ -182,8 +178,6 @@ public class WSHandler implements WebSocketClientTokenListener  {
     	
     	KeyMessage ret = new KeyMessage("keyxchg_2", roundsleft, intrmdt);
     	send(ret.toString());
-    	msgListener.onMessage("SYSTEM: Now in round "+roundsleft+" with key: "+secret);
     	msgListener.onKeyXCHG(roundsleft);
-    	
     }
 }

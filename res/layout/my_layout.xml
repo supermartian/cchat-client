@@ -1,82 +1,88 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="@drawable/backgroud"
     android:orientation="vertical"
-    android:padding="30dp" >
-
+    android:layout_centerHorizontal="true"
+    android:padding="10dp" >
+    
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:layout_marginTop="20dp"
+        android:layout_height="170dp" 
+        android:padding="5dp" >
 
-        <EditText
-            android:id="@+id/roomname"
+        <ImageView
+            android:id="@+id/imageView1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/round_corner"
-            android:ems="10"
-            android:ellipsize="start"
-            android:fadingEdge="horizontal"
-            android:gravity="center_horizontal"
-            android:hint="Room Name"
-            android:inputType="textEmailAddress"
-            android:paddingBottom="5dp"
-            android:textAlignment="textStart"
-            android:textColorHint="#669999"
-            android:textStyle="bold"
-            android:typeface="normal" />
+            android:src="@drawable/chatbanner" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
-
-            <EditText
-                android:id="@+id/nickName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="3dp"
-                android:layout_marginTop="8dp"
-                android:layout_weight="1"
-                android:background="@drawable/round_corner"
-                android:ellipsize="start"
-                android:ems="10"
-                android:gravity="center_horizontal"
-                android:hint="Nick Name"
-                android:textColorHint="#669999"
-                android:textStyle="bold" >
-
-                <requestFocus />
-            </EditText>
-
-            <ImageButton
-                android:id="@+id/login"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.5"
-                android:background="#00000000"
-                android:scaleType="fitCenter"
-                android:src="@drawable/login" />
-
-        </LinearLayout>
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_marginTop="20dp"
+        android:layout_height="73dp" 
+        android:padding="5dp" >
 
         <TextView
             android:id="@+id/textView1"
-            android:layout_width="match_parent"
+            android:textSize="17sp"
+            android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/round_corner"
-            android:gravity="center_vertical|center_horizontal"
-            android:text="Please enter room name and nick name"
-            android:textAlignment="center"
-            android:textSize="11sp" />
+            android:text="@string/tNickname"/>
+
+        <EditText
+            android:id="@+id/nickName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+			android:hint="@string/hNickname"  >
+
+            <requestFocus />
+        </EditText>
 
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="30dp" >
+        android:layout_height="73dp"
+        android:padding="5dp" >
 
+        <TextView
+            android:id="@+id/textView2"
+            android:textSize="17sp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:text="@string/tRoomname"/>
+
+        <EditText
+            android:id="@+id/roomname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"  
+            android:hint="@string/hRoomname" >
+        </EditText>
+	</LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp" 
+        android:layout_gravity="center"
+        android:padding="0dp" >
+            
+        <Button
+        	android:id="@+id/login"
+        	android:layout_marginTop="20dp"
+        	android:layout_width="match_parent"
+        	android:layout_height="50dp"
+        	android:gravity="center"
+        	android:background="#009ec2"
+        	android:textColor="#ffffff"
+        	android:text="@string/bLogin" />
+        
     </LinearLayout>
 
 </LinearLayout>
