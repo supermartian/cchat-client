@@ -3,7 +3,6 @@
 
     <string name="app_name">cChat</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="tRoomname">Chatroom</string>
     <string name="tNickname">Nickname</string>
     <string name="hRoomname">Chatroom name</string>
@@ -13,6 +12,6 @@
     <string name="aPrivateKey">My Crypto Key</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-    <string name="quitconfirm">Are you really want to quit this chat?</string>
+    <string name="quitconfirm">Do you really want to quit this chat?</string>
 
 </resources>
